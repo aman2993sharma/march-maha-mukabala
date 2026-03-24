@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>March Maha Mukabala – Live Leaderboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+/* ===== THEME VARIABLES ===== */
+body.theme-gold {
+  --bg:       #09090f;
+  --bg2:      #11111e;
+  --bg3:      #191928;
+  --accent:   #FFD700;
+  --accent2:  #c9a227;
+  --glow:     rgba(255,215,0,0.35);
+  --neon:     #00d4ff;
+  --hi:       #FFD700;
+  --bar-hi:   #00ff88;
+  --bar-mid:  #ffcc00;
+  --bar-lo:   #ff3355;
+  --text:     #f0f0f8;
+  --muted:    #6b7190;
+  --border:   rgba(255,215,0,0.18);
+  --tab-act:  #1e1800;
+  --pod1-bd:  #FFD700;
+  --pod2-bd:  #C0C0C0;
+  --pod3-bd:  #CD7F32;
+  --medal1: 🥇; --medal2: 🥈; --medal3: 🥉;
+}
+body.theme-fire {
+  --bg:       #0d0603;
+  --bg2:      #180b05;
+  --bg3:      #221206;
+  --accent:   #ff6b2b;
+  --accent2:  #cc4400;
+  --glow:     rgba(255,107,43,0.35);
+  --neon:     #ffcc00;
+  --hi:       #ff6b2b;
+  --bar-hi:   #ff6b2b;
+  --bar-mid:  #ffcc00;
+  --bar-lo:   #ff3355;
+  --text:     #f5ece8;
+  --muted:    #7a5e52;
+  --border:   rgba(255,107,43,0.2);
+  --tab-act:  #1e0a00;
+  --pod1-bd:  #ff6b2b;
+  --pod2-bd:  #ffcc00;
+  --pod3-bd:  #ff3355;
+}
+body.theme-cyber {
+  --bg:       #020810;
+  --bg2:      #051020;
+  --bg3:      #081828;
+  --accent:   #00ffcc;
+  --accent2:  #00bb99;
+  --glow:     rgba(0,255,204,0.3);
+  --neon:     #ff00ff;
+  --hi:       #00ffcc;
+  --bar-hi:   #00ffcc;
+  --bar-mid:  #ffcc00;
+  --bar-lo:   #ff3355;
+  --text:     #e0f8f5;
+  --muted:    #3d7a70;
+  --border:   rgba(0,255,204,0.18);
+  --tab-act:  #001810;
+  --pod1-bd:  #00ffcc;
+  --pod2-bd:  #ff00ff;
+  --pod3-bd:  #00aaff;
+}
+body.theme-royal {
+  --bg:       #08050f;
+  --bg2:      #100820;
+  --bg3:      #180e30;
+  --accent:   #a855f7;
+  --accent2:  #7e22ce;
+  --glow:     rgba(168,85,247,0.3);
+  --neon:     #f0abfc;
+  --hi:       #a855f7;
+  --bar-hi:   #a855f7;
+  --bar-mid:  #f0abfc;
+  --bar-lo:   #ff3355;
+  --text:     #ede8f5;
+  --muted:    #6b5a80;
+  --border:   rgba(168,85,247,0.2);
+  --tab-act:  #120520;
+  --pod1-bd:  #a855f7;
+  --pod2-bd:  #f0abfc;
+  --pod3-bd:  #7e22ce;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Arial',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  transition:background 0.5s,color 0.5s;
+}
+
+canvas#px{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4}
+
+.wrap{position:relative;z-index:2;max-width:1300px;margin:0 auto;padding:0 18px 60px}
+
+/* GLOW LINE */
+.topline{
+  position:fixed;top:0;left:0;right:0;height:2px;z-index:99;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--neon),var(--accent),transparent);
+  animation:linescan 3s linear infinite;background-size:200% 100%;
+}
+@keyframes linescan{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* HEADER */
+.hdr{padding:26px 0 16px;text-align:center;position:relative}
+.hdr-blur{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 150% at 50% -30%,var(--glow) 0%,transparent 70%);
+  pointer-events:none
+}
+.trophy-row{display:flex;align-items:center;justify-content:center;gap:16px}
+.troph{font-size:2.4rem;filter:drop-shadow(0 0 12px var(--accent));animation:bob 2.5s ease-in-out infinite}
+.troph.r{animation-delay:1.25s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.title{
+  font-family:'Arial',sans-serif;font-size:clamp(1.1rem,3.5vw,2.2rem);font-weight:700;
+  background:linear-gradient(135deg,var(--accent),#fff,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 16px var(--glow));letter-spacing:2px
+}
+.subtitle{
+  font-family:'Arial',sans-serif;font-size:clamp(0.55rem,1.2vw,0.72rem);
+  color:var(--neon);letter-spacing:6px;margin-top:5px;opacity:.8
+}
+.meta-row{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-top:12px}
+.live-pill{
+  display:flex;align-items:center;gap:6px;background:rgba(255,51,85,.12);
+  border:1px solid rgba(255,51,85,.4);color:#ff3355;
+  font-family:'Arial',sans-serif;font-size:.62rem;letter-spacing:3px;
+  padding:4px 13px;border-radius:50px;font-weight:700
+}
+.dot{width:7px;height:7px;background:#ff3355;border-radius:50%;animation:pdot 1s ease-in-out infinite}
+@keyframes pdot{0%,100%{box-shadow:0 0 0 0 rgba(255,51,85,.6)}50%{box-shadow:0 0 0 5px rgba(255,51,85,0)}}
+.cd,.rf{display:flex;align-items:center;gap:7px;font-family:'Arial',sans-serif;font-size:.72rem;color:var(--muted)}
+#ct{color:var(--accent);font-weight:700;font-size:.85rem;letter-spacing:2px}
+#si{color:var(--neon)}
+#si.sp{animation:spinit .6s linear}
+@keyframes spinit{to{transform:rotate(360deg)}}
+
+/* THEME SWITCHER */
+.theme-bar{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin:12px 0 0;flex-wrap:wrap
+}
+.theme-bar span{font-family:'Arial',sans-serif;font-size:.58rem;letter-spacing:2px;color:var(--muted);margin-right:4px}
+.tbtn{
+  padding:5px 14px;border-radius:50px;border:1px solid var(--border);
+  background:var(--bg2);color:var(--muted);cursor:pointer;
+  font-family:'Arial',sans-serif;font-size:.8rem;font-weight:600;letter-spacing:1px;
+  transition:.25s
+}
+.tbtn:hover,.tbtn.act{border-color:var(--accent);color:var(--accent);background:var(--tab-act)}
+
+/* TOP PERFORMER */
+.tpbanner{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  background:linear-gradient(135deg,var(--bg2),var(--bg3));
+  border:1px solid var(--accent2);border-radius:14px;
+  padding:16px 24px;margin:18px 0 14px;
+  animation:bglow 3s ease-in-out infinite;position:relative;overflow:hidden
+}
+.tpbanner::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.012) 40px,rgba(255,255,255,.012) 80px);
+  pointer-events:none
+}
+@keyframes bglow{
+  0%,100%{box-shadow:0 0 16px var(--glow),inset 0 0 30px rgba(255,255,255,.02)}
+  50%{box-shadow:0 0 38px var(--glow),inset 0 0 50px rgba(255,255,255,.05)}
+}
+.crown{font-size:2rem;animation:cspin 4s ease-in-out infinite}
+@keyframes cspin{0%,100%{transform:rotate(-8deg) scale(1)}50%{transform:rotate(8deg) scale(1.1)}}
+.tp-info{flex:1}
+.tp-lbl{font-family:'Arial',sans-serif;font-size:.58rem;letter-spacing:4px;color:var(--accent2);display:block}
+.tp-nm{
+  font-family:'Arial',sans-serif;font-size:clamp(1rem,2.5vw,1.6rem);
+  color:var(--accent);font-weight:700;filter:drop-shadow(0 0 8px var(--glow))
+}
+.tp-stats{display:flex;align-items:center;gap:18px}
+.ts{text-align:center}
+.ts span{display:block;font-family:'Arial',sans-serif;font-size:1.3rem;font-weight:700;color:var(--text)}
+.ts.hi span{color:var(--bar-hi);filter:drop-shadow(0 0 6px var(--bar-hi))}
+.ts small{font-size:.58rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.tdiv{width:1px;height:36px;background:var(--border)}
+
+/* SUMMARY */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.sc{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  transition:.3s;position:relative;overflow:hidden
+}
+.sc::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity .3s
+}
+.sc:hover::after{opacity:1}
+.sc:hover{border-color:var(--accent2);transform:translateY(-2px)}
+.sc .fa{font-size:1.4rem;color:var(--accent);flex-shrink:0}
+.sv{display:block;font-family:'Arial',sans-serif;font-size:1.3rem;font-weight:700;color:var(--text);line-height:1}
+.sc small{display:block;font-size:.6rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:3px}
+
+/* TABS */
+.tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.tab{
+  flex:1;min-width:110px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);cursor:pointer;padding:13px 10px;
+  font-family:'Arial',sans-serif;display:flex;flex-direction:column;
+  align-items:center;gap:3px;transition:.3s;position:relative;overflow:hidden
+}
+.tab::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.05),transparent);
+  opacity:0;transition:opacity .3s
+}
+.tab:hover::before,.tab.act::before{opacity:1}
+.tab-d{font-family:'Arial',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:2px}
+.tab-dt{font-size:.95rem;font-weight:600}
+.tab:hover{border-color:var(--accent2);color:var(--accent);transform:translateY(-2px)}
+.tab.act{background:var(--tab-act);border-color:var(--accent);color:var(--accent);
+  box-shadow:0 0 18px var(--glow),0 4px 16px rgba(0,0,0,.4)}
+
+/* PODIUM */
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin-bottom:28px;flex-wrap:wrap}
+.pc{
+  background:var(--bg2);border-radius:14px;padding:20px 16px 16px;
+  text-align:center;position:relative;width:220px;
+  transition:.3s;overflow:hidden;
+  animation:prise .6s cubic-bezier(.34,1.56,.64,1) both
+}
+@keyframes prise{from{opacity:0;transform:translateY(40px) scale(.9)}to{opacity:1;transform:none}}
+.pc.r1{border:1.5px solid var(--pod1-bd);box-shadow:0 0 36px var(--glow),0 8px 28px rgba(0,0,0,.5);width:250px;order:2;animation-delay:.1s}
+.pc.r2{border:1.5px solid var(--pod2-bd);order:1;animation-delay:.2s}
+.pc.r3{border:1.5px solid var(--pod3-bd);order:3;animation-delay:.3s}
+.pc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.pc.r1::before{background:linear-gradient(90deg,transparent,var(--pod1-bd),transparent)}
+.pc.r2::before{background:linear-gradient(90deg,transparent,var(--pod2-bd),transparent)}
+.pc.r3::before{background:linear-gradient(90deg,transparent,var(--pod3-bd),transparent)}
+.pc:hover{transform:translateY(-6px) scale(1.02)}
+.pc.r1::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);
+  animation:shim 3s ease-in-out infinite;pointer-events:none
+}
+@keyframes shim{0%,100%{opacity:.4}50%{opacity:1}}
+.pmed{font-size:2rem;display:block;margin-bottom:6px;filter:drop-shadow(0 0 8px var(--accent));animation:meds 5s ease-in-out infinite}
+@keyframes meds{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.prb{
+  position:absolute;top:9px;right:10px;font-family:'Arial',sans-serif;
+  font-size:.65rem;font-weight:900;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center
+}
+.r1 .prb{background:var(--pod1-bd);color:#000}
+.r2 .prb{background:var(--pod2-bd);color:#000}
+.r3 .prb{background:var(--pod3-bd);color:#fff}
+.pname{font-family:'Arial',sans-serif;font-size:1.15rem;font-weight:700;color:var(--text);margin:4px 0 10px}
+.r1 .pname{color:var(--accent);font-size:1.3rem}
+.pstats{display:flex;justify-content:center;gap:10px;margin-bottom:12px}
+.ps{text-align:center}
+.ps .v{display:block;font-family:'Arial',sans-serif;font-size:.88rem;font-weight:700;color:var(--text)}
+.ps small{font-size:.55rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase}
+.ppct{font-family:'Arial',sans-serif;font-size:1.4rem;font-weight:900;margin-bottom:7px}
+.r1 .ppct{color:var(--pod1-bd);filter:drop-shadow(0 0 7px var(--pod1-bd))}
+.r2 .ppct{color:var(--pod2-bd)}
+.r3 .ppct{color:var(--pod3-bd)}
+.pbar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;width:0;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.r1 .pbf{background:linear-gradient(90deg,var(--accent2),var(--accent),#fff)}
+.r2 .pbf{background:linear-gradient(90deg,#666,var(--pod2-bd))}
+.r3 .pbf{background:linear-gradient(90deg,#5a3800,var(--pod3-bd))}
+
+/* TABLE */
+.twrap{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.lbt{width:100%;border-collapse:collapse}
+.lbt thead tr{background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--accent2)}
+.lbt th{
+  font-family:'Arial',sans-serif;font-size:.58rem;font-weight:700;
+  letter-spacing:2.5px;color:var(--accent2);padding:13px 16px;text-align:left;white-space:nowrap
+}
+.lbt th:first-child{text-align:center}
+.lbt tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .2s;animation:rowslide .4s ease both}
+@keyframes rowslide{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.lbt tbody tr:last-child{border-bottom:none}
+.lbt tbody tr:hover{background:rgba(255,255,255,.03)}
+.lbt td{padding:13px 16px;font-size:.98rem;font-weight:500;color:var(--text);vertical-align:middle}
+.rc{text-align:center;font-family:'Arial',sans-serif;font-weight:700;font-size:.85rem;color:var(--muted);width:44px}
+.nc{font-weight:700;font-size:1rem}
+.ptd{min-width:150px}
+.plbl{font-family:'Arial',sans-serif;font-size:.75rem;font-weight:700;margin-bottom:4px}
+.pbg{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden}
+.bf{height:100%;border-radius:4px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.bf.hi{background:linear-gradient(90deg,#004a2a,var(--bar-hi))}
+.bf.md{background:linear-gradient(90deg,#4a3800,var(--bar-mid))}
+.bf.lo{background:linear-gradient(90deg,#4a001a,var(--bar-lo))}
+.plbl.hi{color:var(--bar-hi)}
+.plbl.md{color:var(--bar-mid)}
+.plbl.lo{color:var(--bar-lo)}
+.totc{font-family:'Arial',sans-serif;font-weight:700;font-size:.98rem;color:var(--accent)}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty .fa{font-size:2.5rem;display:block;margin-bottom:12px;animation:fadeflash 2s ease-in-out infinite}
+@keyframes fadeflash{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* FOOTER */
+footer{text-align:center;padding:28px 0 8px;font-size:.72rem;color:var(--muted);
+  border-top:1px solid var(--border);margin-top:38px;letter-spacing:1px}
+
+/* RESPONSIVE */
+@media(max-width:900px){.summary{grid-template-columns:repeat(2,1fr)}.pc{width:170px}.pc.r1{width:200px}}
+@media(max-width:640px){
+  .summary{grid-template-columns:repeat(2,1fr);gap:8px}
+  .tabs{gap:6px}.tab{min-width:75px;padding:10px 6px}
+  .tpbanner{flex-wrap:wrap;gap:10px}
+  .podium{flex-direction:column;align-items:center}
+  .pc.r2,.pc.r3{order:unset}
+  .lbt th,.lbt td{padding:9px 9px;font-size:.82rem}
+  .title{font-size:1.1rem}
+}
+::-webkit-scrollbar{width:7px}::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:4px}
+</style>
+</head>
+<body class="theme-gold">
+
+<canvas id="px"></canvas>
+<div class="topline"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-blur"></div>
+    <div class="trophy-row">
+      <span class="troph">🏆</span>
+      <div>
+        <h1 class="title">March Maha Mukabala</h1>
+        <p class="subtitle">LIVE PERFORMANCE LEADERBOARD</p>
+      </div>
+      <span class="troph r">🏆</span>
+    </div>
+    <div class="meta-row">
+      <div class="live-pill"><span class="dot"></span>LIVE</div>
+      <div class="cd"><i class="fa fa-clock"></i><span>Ends in:</span><span id="ct">--:--:--</span></div>
+      <div class="rf"><i class="fa fa-sync-alt" id="si"></i><span id="rt">Syncing…</span></div>
+    </div>
+    <!-- THEME SWITCHER -->
+    <div class="theme-bar">
+      <span>THEME:</span>
+      <button class="tbtn act" data-t="theme-gold">⚜ Gold</button>
+      <button class="tbtn" data-t="theme-fire">🔥 Fire</button>
+      <button class="tbtn" data-t="theme-cyber">💠 Cyber</button>
+      <button class="tbtn" data-t="theme-royal">👑 Royal</button>
+    </div>
+  </header>
+
+  <!-- TOP PERFORMER -->
+  <div class="tpbanner">
+    <div class="crown">👑</div>
+    <div class="tp-info">
+      <span class="tp-lbl">TOP PERFORMER OF THE DAY</span>
+      <span class="tp-nm" id="tp-nm">—</span>
+    </div>
+    <div class="tp-stats">
+      <div class="ts"><span id="tp-ach">—</span><small>Achieved</small></div>
+      <div class="tdiv"></div>
+      <div class="ts hi"><span id="tp-pct">—</span><small>Achievement</small></div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <div class="sc"><i class="fa fa-users"></i><div><span class="sv" id="sm-mem">0</span><small>Members</small></div></div>
+    <div class="sc"><i class="fa fa-bullseye"></i><div><span class="sv" id="sm-tgt">0</span><small>Total Target</small></div></div>
+    <div class="sc"><i class="fa fa-check-circle"></i><div><span class="sv" id="sm-ach">0</span><small>Total Achieved</small></div></div>
+    <div class="sc"><i class="fa fa-chart-line"></i><div><span class="sv" id="sm-pct">0%</span><small>Team Achievement</small></div></div>
+  </div>
+
+  <!-- TABS -->
+  <nav class="tabs">
+    <button class="tab act" data-day="0"><span class="tab-d">Day 1</span><span class="tab-dt">24 March</span></button>
+    <button class="tab" data-day="1"><span class="tab-d">Day 2</span><span class="tab-dt">25 March</span></button>
+    <button class="tab" data-day="2"><span class="tab-d">Day 3</span><span class="tab-dt">26 March</span></button>
+    <button class="tab" data-day="3"><span class="tab-d">Day 4</span><span class="tab-dt">27 March</span></button>
+  </nav>
+
+  <!-- PODIUM -->
+  <div class="podium" id="podium"></div>
+
+  <!-- TABLE -->
+  <div class="twrap" id="twrap">
+    <table class="lbt">
+      <thead><tr>
+        <th>#</th><th>NAME</th><th>TARGET</th><th>ACHIEVED</th><th>ACHIEVEMENT %</th><th>TOTAL BOOKINGS</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- EMPTY -->
+  <div class="empty" id="empty" style="display:none">
+    <i class="fa fa-hourglass-half"></i><p>No data for this day yet.</p>
+  </div>
+
+  <footer>March Maha Mukabala &copy; 2026 &nbsp;|&nbsp; Live via Google Sheets</footer>
+</div>
+
+<script>
+/* =============================================
+   CONFIG — EDIT THESE
+============================================= */
+const CFG = {
+  // 🔑 Paste your Google Sheet ID here
+  SHEET_ID: "1cOUiBWbigFDJ6DJ46U7yHNQd1kgXLEJCfBSld-TWFQo",
+
+  // The tab name in your Google Sheet (default is Sheet1)
+  SHEET_TAB: "Sheet1",
+
+  // Campaign end datetime
+  CAMPAIGN_END: "2026-03-27T23:59:59",
+
+  // Refresh every N milliseconds
+  REFRESH: 8000,
+
+  // Sort by: "pct" | "total" | "achieved"
+  SORT: "pct",
+
+  // Color thresholds
+  C_LOW: 40,
+  C_MED: 70,
+
+  // Column positions (0-based) matching YOUR sheet:
+  // Col A=Name, B=Total Bookings Done, C=% Achievement,
+  // D=24th Target, E=24th Achieved,
+  // F=25th Target, G=25th Achieved,
+  // H=26th Target, I=26th Achieved,
+  // J=27th Target, K=27th Achieved
+  DAYS: [
+    { label:"24 March", ti:3, ai:4 },
+    { label:"25 March", ti:5, ai:6 },
+    { label:"26 March", ti:7, ai:8 },
+    { label:"27 March", ti:9, ai:10 },
+  ]
+};
+
+/* =============================================
+   DEMO DATA — mirrors your exact team & sheet
+============================================= */
+// Each row: [Name, TotalBookings, %Overall, T24,A24, T25,A25, T26,A26, T27,A27]
+const DEMO_ROWS = [
+  ["Ajay Kumar",     20, 100, 5,5, 5,5, 5,5, 5,0],
+  ["Shriya Kumari",  20, 100, 5,5, 5,5, 5,5, 5,0],
+  ["Chandan Kumar",  20, 100, 5,5, 5,5, 5,5, 5,0],
+  ["Mani Chander",   16,  80, 5,4, 5,4, 5,4, 5,0],
+  ["Mustafa",        18,  90, 5,5, 5,5, 5,4, 5,0],
+  ["Monika Agarwal", 14,  70, 5,4, 5,3, 5,4, 5,0],
+  ["Yuvraj P",       10,  50, 5,3, 5,2, 5,3, 5,0],
+  ["Sanjay Bichoi",   8,  40, 5,2, 5,2, 5,2, 5,0],
+];
+
+/* =============================================
+   STATE
+============================================= */
+let activeDay = 0, timer = null;
+
+/* =============================================
+   PARTICLES
+============================================= */
+(function(){
+  const c=document.getElementById('px'),ctx=c.getContext('2d');
+  let W,H,pts;
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight}
+  function make(){pts=Array.from({length:55},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    r:Math.random()*2+.3,
+    dx:(Math.random()-.5)*.35,dy:-(Math.random()*.5+.15),
+    a:Math.random()*.5+.2,
+    col:Math.random()>.55?'#FFD700':Math.random()>.5?'#00d4ff':'#ffffff'
+  }))}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=p.col;ctx.globalAlpha=p.a;ctx.fill();
+      p.x+=p.dx;p.y+=p.dy;
+      if(p.y<-5){p.y=H+5;p.x=Math.random()*W}
+      if(p.x<0||p.x>W)p.dx*=-1
+    });
+    ctx.globalAlpha=1;requestAnimationFrame(draw)
+  }
+  resize();make();draw();
+  window.addEventListener('resize',()=>{resize();make()})
+})();
+
+/* =============================================
+   COUNTDOWN
+============================================= */
+function tick(){
+  const d=new Date(CFG.CAMPAIGN_END).getTime()-Date.now();
+  if(d<=0){document.getElementById('ct').textContent='ENDED';return}
+  const h=Math.floor(d/3600000),m=Math.floor(d%3600000/60000),s=Math.floor(d%60000/1000);
+  document.getElementById('ct').textContent=`${(''+h).padStart(2,'0')}:${(''+m).padStart(2,'0')}:${(''+s).padStart(2,'0')}`;
+}
+setInterval(tick,1000);tick();
+
+/* =============================================
+   COUNTUP
+============================================= */
+function countUp(el,target,ms=850,sfx=''){
+  const start=parseInt(el.textContent)||0,range=target-start;
+  if(!range)return;
+  const t0=performance.now();
+  (function step(now){
+    const p=Math.min((now-t0)/ms,1),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(start+range*e)+sfx;
+    if(p<1)requestAnimationFrame(step)
+  })(performance.now())
+}
+
+/* =============================================
+   FETCH — reads ONE sheet, all days in one go
+============================================= */
+async function fetchAllRows(){
+  if(!CFG.SHEET_ID||CFG.SHEET_ID==="YOUR_GOOGLE_SHEET_ID_HERE") return DEMO_ROWS;
+
+  // METHOD 1: CSV export (most reliable for public sheets)
+  const csvUrl=`https://docs.google.com/spreadsheets/d/${CFG.SHEET_ID}/export?format=csv&gid=0`;
+  try{
+    const r=await fetch(csvUrl);
+    if(!r.ok) throw new Error('CSV fetch failed: '+r.status);
+    const text=await r.text();
+    const lines=text.trim().split('\n').slice(1); // skip header row
+    return lines
+      .map(line=>{
+        // handle quoted CSV values
+        const cols=[];let cur='',inQ=false;
+        for(let ch of line){
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+          else cur+=ch;
+        }
+        cols.push(cur.trim());
+        return cols;
+      })
+      .filter(r=>r[0]&&r[0].trim()!=='');
+  }catch(e){
+    console.warn('CSV failed, trying gviz...',e);
+    // METHOD 2: gviz fallback
+    try{
+      const gvizUrl=`https://docs.google.com/spreadsheets/d/${CFG.SHEET_ID}/gviz/tq?tqx=out:json&gid=0`;
+      const r2=await fetch(gvizUrl);
+      const raw=await r2.text();
+      const j=JSON.parse(raw.replace(/^[^(]+\(/,'').replace(/\);?\s*$/,''));
+      return j.table.rows
+        .map(row=>row.c.map(cell=>cell?String(cell.v??''):''))
+        .filter(r=>r[0]);
+    }catch(e2){
+      console.warn('Both fetch methods failed, using demo data',e2);
+      return DEMO_ROWS;
+    }
+  }
+}
+
+/* =============================================
+   HELPERS
+============================================= */
+// Convert a raw row array into a day-specific object
+function rowToDay(row, dayIdx){
+  const d=CFG.DAYS[dayIdx];
+  const target=+row[d.ti]||0;
+  const achieved=+row[d.ai]||0;
+  const pct=target>0?Math.round(achieved/target*100):0;
+  return {
+    Name: row[0]||'—',
+    Target: target,
+    Achieved: achieved,
+    Pct: pct,
+    Total: +row[1]||0,
+    PctAll: +row[2]||0
+  };
+}
+
+function sortPeople(data){
+  return [...data].sort((a,b)=>{
+    if(CFG.SORT==='total')    return b.Total-a.Total;
+    if(CFG.SORT==='achieved') return b.Achieved-a.Achieved;
+    return b.Pct-a.Pct;
+  });
+}
+function cls(p){return p<CFG.C_LOW?'lo':p<CFG.C_MED?'md':'hi'}
+
+let ALL_ROWS=[];
+
+/* =============================================
+   RENDER
+============================================= */
+async function render(day){
+  const si=document.getElementById('si');si.classList.add('sp');
+
+  // Fetch fresh data from sheet
+  ALL_ROWS=await fetchAllRows();
+
+  // Build day-specific array
+  const dayData=ALL_ROWS.map(row=>rowToDay(row,day));
+  const sorted=sortPeople(dayData);
+  const hasData=sorted.some(p=>p.Target>0||p.Achieved>0);
+
+  document.getElementById('empty').style.display=hasData?'none':'block';
+  document.getElementById('podium').style.display=hasData?'':'none';
+  document.getElementById('twrap').style.display=hasData?'':'none';
+  if(!hasData){si.classList.remove('sp');return}
+
+  // Top performer (by day achievement %)
+  const top=sorted[0];
+  document.getElementById('tp-nm').textContent=top.Name;
+  countUp(document.getElementById('tp-ach'),top.Achieved,900);
+  countUp(document.getElementById('tp-pct'),top.Pct,900,'%');
+
+  // Summary — day totals
+  const tt=dayData.reduce((s,r)=>s+r.Target,0);
+  const ta=dayData.reduce((s,r)=>s+r.Achieved,0);
+  const tp=tt>0?Math.round(ta/tt*100):0;
+  countUp(document.getElementById('sm-mem'),dayData.length,700);
+  countUp(document.getElementById('sm-tgt'),tt,800);
+  countUp(document.getElementById('sm-ach'),ta,800);
+  countUp(document.getElementById('sm-pct'),tp,800,'%');
+
+  // Podium — top 3
+  const pod=document.getElementById('podium');
+  pod.innerHTML='';
+  const medals=['🥇','🥈','🥉'],rc=['r1','r2','r3'];
+  sorted.slice(0,3).forEach((p,i)=>{
+    const d=document.createElement('div');
+    d.className=`pc ${rc[i]}`;d.style.animationDelay=(i*.1+.1)+'s';
+    d.innerHTML=`
+      <div class="prb">${i+1}</div>
+      <span class="pmed">${medals[i]}</span>
+      <div class="pname">${p.Name}</div>
+      <div class="pstats">
+        <div class="ps"><span class="v" data-t="${p.Target}">0</span><small>Target</small></div>
+        <div class="ps"><span class="v" data-t="${p.Achieved}">0</span><small>Achieved</small></div>
+        <div class="ps"><span class="v" data-t="${p.Total}">0</span><small>Total</small></div>
+      </div>
+      <div class="ppct" data-t="${p.Pct}" data-s="%">0%</div>
+      <div class="pbar"><div class="pbf" data-w="${Math.min(p.Pct,100)}"></div></div>`;
+    pod.appendChild(d);
+    requestAnimationFrame(()=>{
+      d.querySelectorAll('[data-t]').forEach(el=>countUp(el,+el.dataset.t,900,el.dataset.s||''));
+      setTimeout(()=>{d.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w+'%')},200);
+    });
+  });
+
+  // Table — rank 4 onwards
+  const tb=document.getElementById('tbody');tb.innerHTML='';
+  sorted.slice(3).forEach((p,i)=>{
+    const c=cls(p.Pct);
+    const tr=document.createElement('tr');tr.style.animationDelay=(i*.05)+'s';
+    tr.innerHTML=`
+      <td class="rc">${i+4}</td>
+      <td class="nc">${p.Name}</td>
+      <td>${p.Target}</td>
+      <td>${p.Achieved}</td>
+      <td class="ptd">
+        <div class="plbl ${c}" data-t="${p.Pct}" data-s="%">0%</div>
+        <div class="pbg"><div class="bf ${c}" data-w="${Math.min(p.Pct,100)}"></div></div>
+      </td>
+      <td class="totc" data-t="${p.Total}">0</td>`;
+    tb.appendChild(tr);
+    requestAnimationFrame(()=>{
+      tr.querySelectorAll('[data-t]').forEach(el=>countUp(el,+el.dataset.t,820,el.dataset.s||''));
+      setTimeout(()=>{tr.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w+'%')},150);
+    });
+  });
+
+  si.classList.remove('sp');
+  document.getElementById('rt').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+/* =============================================
+   TABS
+============================================= */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('act'));
+    btn.classList.add('act');
+    activeDay=+btn.dataset.day;
+    render(activeDay);
+    clearInterval(timer);
+    timer=setInterval(()=>render(activeDay),CFG.REFRESH);
+  });
+});
+
+/* =============================================
+   THEME SWITCHER
+============================================= */
+document.querySelectorAll('.tbtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('act'));
+    btn.classList.add('act');
+    document.body.className=btn.dataset.t;
+  });
+});
+
+/* =============================================
+   INIT
+============================================= */
+render(activeDay);
+timer=setInterval(()=>render(activeDay),CFG.REFRESH);
+</script>
+</body>
+</html>
